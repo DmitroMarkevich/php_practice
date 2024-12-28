@@ -2,22 +2,19 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Enums\EmailType;
+use App\Exceptions\Custom\UserAlreadyExistsException;
 use App\Jobs\SendEmailJob;
-use App\Exceptions\UserAlreadyExistsException;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-class UserService extends BaseService
+class UserService
 {
     /**
      * Store a new user in the database.
      *
-     * This method ensures that no user with the same email already exists.
-     * If a user with the provided email exists, a UserAlreadyExistsException is thrown.
-     *
      * @param User $user The user instance to be stored.
-     * @return void
+     * @return void This method performs a database transaction and sends an email but does not return any value.
      * @throws UserAlreadyExistsException If a user with the same email already exists.
      */
     public function storeUser(User $user): void
@@ -28,7 +25,7 @@ class UserService extends BaseService
             $existingUser = User::where('email', $userEmail)->first();
 
             if ($existingUser) {
-                throw new UserAlreadyExistsException("User with email $userEmail already exists");
+                throw new UserAlreadyExistsException("User with email `$userEmail` already exists");
             }
 
             $user->save();

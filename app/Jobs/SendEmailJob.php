@@ -26,13 +26,23 @@ class SendEmailJob implements ShouldQueue
         $this->recipientEmail = $recipientEmail;
     }
 
+    /**
+     * Execute the job to send the email.
+     *
+     * @return void
+     */
     public function handle(): void
     {
-        Mail::to($this->recipientEmail)->send(
-            new Email(
-                $this->emailType,
-                $this->mailData
-            )
-        );
+        $this->sendEmail();
+    }
+
+    /**
+     * Send the email using the appropriate mail data and type.
+     *
+     * @return void
+     */
+    private function sendEmail(): void
+    {
+        Mail::to($this->recipientEmail)->send(new Email($this->emailType, $this->mailData));
     }
 }

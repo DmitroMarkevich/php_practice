@@ -6,25 +6,20 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Contracts\Support\Responsable;
 
-class ErrorResponse implements Responsable
+readonly class ErrorResponse implements Responsable
 {
+    private array $errors;
     private string $timestamp;
-    private int $statusCode;
-    private string $message;
-    private ?array $errors;
     private string $path;
 
     public function __construct(
-        int $statusCode,
-        string $message,
-        ?array $errors = null,
-        ?string $path = null
+        private int $statusCode,
+        private string $message,
+        string $errors,
     ) {
-        $this->statusCode = $statusCode;
+        $this->errors = explode(';', $errors);;
         $this->timestamp = now()->toIso8601String();
-        $this->message = $message;
-        $this->errors = $errors;
-        $this->path = $path ?? '/' . request()->path();
+        $this->path = '/' . request()->path();
     }
 
     /**
