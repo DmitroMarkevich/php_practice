@@ -2,35 +2,55 @@
 
 namespace App\Services;
 
-use App\Enums\EmailType;
-use App\Exceptions\Custom\UserAlreadyExistsException;
-use App\Jobs\SendEmailJob;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Exceptions\Custom\UserNotFoundException;
 
 class UserService
 {
     /**
-     * Store a new user in the database.
+     * Retrieve a user by their ID.
      *
-     * @param User $user The user instance to be stored.
-     * @return void This method performs a database transaction and sends an email but does not return any value.
-     * @throws UserAlreadyExistsException If a user with the same email already exists.
+     * @param int $id The user's ID.
+     * @return User The retrieved user.
+     * @throws UserNotFoundException If no user is found with the given ID.
      */
-    public function storeUser(User $user): void
+    public function getUserById(int $id): User
     {
-        $userEmail = $user->email;
+        $user = User::find($id);
 
-        DB::transaction(function () use ($user, $userEmail) {
-            $existingUser = User::where('email', $userEmail)->first();
+        if (!$user) {
+            throw new UserNotFoundException();
+        }
 
-            if ($existingUser) {
-                throw new UserAlreadyExistsException("User with email `$userEmail` already exists");
-            }
+        return $user;
+    }
 
-            $user->save();
+    /**
+     * Retrieve a user by their email address.
+     *
+     * @param string $email The user's email address.
+     * @return User The retrieved user.
+     * @throws UserNotFoundException If no user is found with the given email address.
+     */
+    public function getUserByEmail(string $email): User
+    {
+        $user = User::where('email', $email)->first();
 
-            SendEmailJob::dispatch(EmailType::PASSWORD_RESET, [], $user->email);
-        });
+        if (!$user) {
+            throw new UserNotFoundException();
+        }
+
+        return $user;
+    }
+
+    /**
+     * Check if a user already exists by their email address.
+     *
+     * @param string $email The email address to check.
+     * @return bool True if a user with the given email exists, false otherwise.
+     */
+    public function isUserExistByEmail(string $email): bool
+    {
+        return User::where('email', $email)->exists();
     }
 }

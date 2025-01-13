@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use Exception;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Hash;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -30,6 +32,7 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     public function setPasswordAttribute($value): void
@@ -39,12 +42,23 @@ class User extends Authenticatable implements JWTSubject
 
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, 'role_user');
+        return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id');
     }
 
-    public function hasRole(string $roleName): bool
+    public function assignRole(string $roleName): void
     {
-        return $this->roles()->where('name', $roleName)->exists();
+        $role = Role::where('name', $roleName)->first();
+
+        if (!$role) {
+            throw new Exception("Role '$roleName' does not exist.");
+        }
+
+        $this->roles()->attach($role->id);
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->roles()->where('name', $role)->exists();
     }
 
     public function getJWTIdentifier()

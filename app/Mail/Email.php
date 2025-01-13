@@ -13,14 +13,10 @@ class Email extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public array $mailData;
-    public EmailType $emailType;
-
-    public function __construct(EmailType $emailType, array $mailData)
-    {
-        $this->emailType = $emailType;
-        $this->mailData = $mailData;
-    }
+    public function __construct(
+        public EmailType $emailType,
+        public array $mailData
+    ) {}
 
     public function envelope(): Envelope
     {

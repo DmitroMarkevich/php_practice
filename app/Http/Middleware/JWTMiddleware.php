@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Exception;
+use App\Constants\Message;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Exceptions\Custom\JWTException;
@@ -23,12 +24,12 @@ class JWTMiddleware
     {
         try {
             JWTAuth::parseToken()->authenticate();
-        } catch (TokenExpiredException $e) {
-            throw new JWTException('The provided JWT token has expired. Please refresh your token.');
-        } catch (TokenInvalidException $e) {
-            throw new JWTException('The provided JWT token is invalid. Please check the token and try again.');
-        } catch (Exception $e) {
-            throw new JWTException('An error occurred while processing the JWT token. Please try again later.');
+        } catch (TokenExpiredException) {
+            throw new JWTException(Message::AuthErrors['TOKEN_EXPIRED']);
+        } catch (TokenInvalidException) {
+            throw new JWTException(Message::AuthErrors['TOKEN_INVALID']);
+        } catch (Exception) {
+            throw new JWTException();
         }
 
         return $next($request);

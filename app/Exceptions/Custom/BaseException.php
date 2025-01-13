@@ -3,7 +3,7 @@
 namespace App\Exceptions\Custom;
 
 use Exception;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Http\Responses\ErrorResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -25,13 +25,13 @@ abstract class BaseException extends Exception
      */
     public function report(): void
     {
-        //
+        Log::error("Exception: {$this->getMessage()} | Code: $this->statusCode");
     }
 
     /**
      * Render the exception into an HTTP response.
      */
-    public function render(Request $request): ErrorResponse
+    public function render(): ErrorResponse
     {
         $messageCode = Response::$statusTexts[$this->statusCode];
 
